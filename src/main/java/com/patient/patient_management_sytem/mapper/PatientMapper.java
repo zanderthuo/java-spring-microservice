@@ -35,6 +35,18 @@ public final class PatientMapper {
                 .build();
     }
 
+    /**
+     * Map updates from PatientRequestDto → existing Patient (UPDATE)
+     */
+    public static void updateEntity(Patient patient, PatientRequestDto dto) {
+        if (patient == null || dto == null) return;
+
+        patient.setName(dto.getName());
+        patient.setAddress(dto.getAddress());
+        patient.setEmail(dto.getEmail());
+        patient.setDateOfBirth(parseDate(dto.getDateOfBirth()));
+    }
+
     private static LocalDate parseDate(String value) {
         if (value == null || value.isBlank()) return null;
         return LocalDate.parse(value); // expects ISO format: yyyy-MM-dd
