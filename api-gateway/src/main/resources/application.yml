@@ -1,0 +1,20 @@
+server:
+  port: 5004
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: patient-service-route
+          uri: http://patient-service:5001
+          predicates:
+            - Path=/api/patients/**
+          filters:
+            - RewritePath=/api/patients(?<remaining>/?.*),/patients${remaining}
+
+        - id: api-docs-patient-route
+          uri: http://patient-service:5001
+          predicates:
+            - Path=/api-docs/patients
+          filters:
+            - SetPath=/v3/api-docs
