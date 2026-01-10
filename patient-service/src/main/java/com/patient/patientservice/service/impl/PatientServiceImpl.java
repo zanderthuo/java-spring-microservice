@@ -3,6 +3,7 @@ package com.patient.patientservice.service.impl;
 import com.patient.patientservice.exception.EmailAlreadyExistsException;
 import com.patient.patientservice.exception.PatientNotFoundException;
 import com.patient.patientservice.grpc.BillingServiceGrpcClient;
+import com.patient.patientservice.kafka.KafkaProducer;
 import com.patient.patientservice.mapper.PatientMapper;
 import com.patient.patientservice.modal.Patient;
 import com.patient.patientservice.dto.PatientRequestDto;
@@ -22,6 +23,7 @@ public class PatientServiceImpl implements PatientService {
 
     private final PatientRepository patientRepository;
     private final BillingServiceGrpcClient  billingServiceGrpcClient;
+    private final KafkaProducer kafkaProducer;
 
     @Transactional
     @Override
@@ -42,6 +44,9 @@ public class PatientServiceImpl implements PatientService {
         Patient newPatient = patientRepository.save(PatientMapper.toEntity(patientRequestDto));
 
         billingServiceGrpcClient.createBillingAccount(newPatient.getId().toString(), newPatient.getName(), newPatient.getEmail());
+
+        kafkaProducer.sendEvent(newPatient);
+
         return PatientMapper.toResponseDto(newPatient);
     }
 
