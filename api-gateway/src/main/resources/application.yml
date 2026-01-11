@@ -5,12 +5,20 @@ spring:
   cloud:
     gateway:
       routes:
+        - id: auth-service-route
+          uri: http://auth-service:5020
+          predicates:
+            - Path=/auth/**
+          filters:
+            - RewritePath=/auth(?<remaining>/?.*),/auth${remaining}
+
         - id: patient-service-route
           uri: http://patient-service:5001
           predicates:
             - Path=/api/patients/**
           filters:
             - RewritePath=/api/patients(?<remaining>/?.*),/patients${remaining}
+            - JwtValidation
 
         - id: api-docs-patient-route
           uri: http://patient-service:5001
