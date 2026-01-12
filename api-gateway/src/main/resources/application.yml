@@ -9,8 +9,8 @@ spring:
           uri: http://auth-service:5020
           predicates:
             - Path=/auth/**
-          filters:
-            - RewritePath=/auth(?<remaining>/?.*),/auth${remaining}
+          # no rewrite needed if auth-service already uses /auth/**
+          # filters: []
 
         - id: patient-service-route
           uri: http://patient-service:5001
@@ -20,9 +20,27 @@ spring:
             - RewritePath=/api/patients(?<remaining>/?.*),/patients${remaining}
             - JwtValidation
 
-        - id: api-docs-patient-route
-          uri: http://patient-service:5001
+        # ? expose auth openapi through gateway at /v3/api-docs/auth
+        - id: openapi-auth
+          uri: http://auth-service:5020
           predicates:
-            - Path=/api-docs/patients
+            - Path=/v3/api-docs/auth
           filters:
             - SetPath=/v3/api-docs
+
+        # ? expose patient openapi through gateway at /v3/api-docs/patient
+        - id: openapi-patient
+          uri: http://patient-service:5001
+          predicates:
+            - Path=/v3/api-docs/patient
+          filters:
+            - SetPath=/v3/api-docs
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: auth-service
+        url: /v3/api-docs/auth
+      - name: patient-service
+        url: /v3/api-docs/patient
